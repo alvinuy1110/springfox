@@ -4,6 +4,7 @@
 ### IntelliJ IDEA ###
 .idea/*.xml
 .idea/libraries/*
+.idea/sonarlint/**
 *.iws
 *.iml
 *.ipr
