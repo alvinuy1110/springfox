@@ -226,7 +226,7 @@ Example:
 
 When using Jackson, Jackson annotations will be honored.
 
-Example:
+### Example 1: JSON  properties
 
 public class Student {
 
@@ -238,6 +238,30 @@ public class Student {
     private String firstName;
 ```     
 
+### Example 2: Using custom serializer
+
+```
+public class Employee {
+
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date startDate;
+```
+
+### Example 3: Using custom object mapper
+
+When annotating is not possible, you can use an object mapper.  You will not be able to use other features like JSR-303 and Model annotation for this object.
+
+```
+@Bean
+    public ObjectMapper objectMapper(){
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule simpleModule = new SimpleModule("SimpleModule");
+        simpleModule.addSerializer(Location.class, new CustomLocationSerializer());
+        objectMapper.registerModule(simpleModule);
+        return objectMapper;
+    }
+
+```
 # Operation
 
 The operation uses the method name by default. To customize, use "@ApiOperation"
@@ -304,7 +328,6 @@ References
 TODO
 =========
 
-1. Custom object mapper (serializer/ deserializer)
 1. security
 1. headers - ApiImplicitParam
     
