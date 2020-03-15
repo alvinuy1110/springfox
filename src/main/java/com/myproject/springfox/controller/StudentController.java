@@ -1,12 +1,19 @@
 package com.myproject.springfox.controller;
 
+import com.myproject.springfox.domain.ApiError;
+import com.myproject.springfox.domain.CreateStudentRequest;
 import com.myproject.springfox.domain.Student;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping(value = "/api/simple")
@@ -14,20 +21,46 @@ import org.springframework.web.bind.annotation.RequestMethod;
 //@Api(tags="Customer Controller", description = "some desc")
 public class StudentController {
 
-    @RequestMapping(value = "/student/{id}", method = RequestMethod.GET)
-    public ResponseEntity get(@PathVariable(name="id") int id) {
+    @ApiOperation(value = "Find student by id",  notes = "this is the description")
+    @RequestMapping(value = "/students/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Student> get(@PathVariable(name="id") int id) {
 
         Student student = createStudent(id);
         return ResponseEntity.ok().body(student);
     }
 
-    @RequestMapping(value = "/student", method = RequestMethod.POST)
-    public ResponseEntity create() {
+    @RequestMapping(value = "/students", method = RequestMethod.GET)
+    public ResponseEntity<List<Student>> getAll() {
 
-        return ResponseEntity.status(201).build();
+        Student student = createStudent(1);
+        Student student2 = createStudent(2);
+        List<Student> students = new ArrayList<>();
+        students.add(student);
+        students.add(student2);
+        return ResponseEntity.ok().body(students);
     }
 
-    @RequestMapping(value = "/student", method = RequestMethod.PUT)
+    @ApiResponses(value = {
+            @ApiResponse(code = 422, message = "processing error", response = ApiError.class)})
+    @RequestMapping(value = "/students", method = RequestMethod.POST)
+    public ResponseEntity<Student> create(@Valid @RequestBody CreateStudentRequest createStudentRequest) {
+
+        Student student = createStudent(1);
+        student.setFirstName(createStudentRequest.getFirstName());
+        student.setLastName(createStudentRequest.getLastName());
+        return ResponseEntity.status(201).body(student);
+    }
+
+    @ApiOperation(value = "Find student by id",  notes = "this is the description")
+    @RequestMapping(value = "/students/filter/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Student> getWithParam(@PathVariable(name="id") int id, @RequestParam(value = "sort") String sort) {
+
+        Student student = createStudent(id);
+        return ResponseEntity.ok().body(student);
+    }
+
+
+    @RequestMapping(value = "/students", method = RequestMethod.PUT)
     public ResponseEntity update() {
 
         return ResponseEntity.ok().build();

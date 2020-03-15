@@ -16,6 +16,28 @@ Swagger Setup
         </dependency>
 ```
 
+## Support for JSR-303
+
+When using bean validation, add this.
+
+```
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-bean-validators</artifactId>
+    <version>2.9.2</version>
+</dependency>
+```
+
+Then in your java config import "BeanValidatorPluginsConfiguration.class"
+
+Example:
+```
+@Configuration
+@EnableSwagger2
+@Import(BeanValidatorPluginsConfiguration.class)
+public class SwaggerConfig {
+```
+
 # Enable Code Scan
 
 Add the annotation "EnableSwagger2".
@@ -58,20 +80,6 @@ Packages
 |config |spring config|
 |domain| pojo for REST|
 |controller|REST controllers|
-
-``
-Use Cases
-=========
-
-1. [Swagger annotation pieces](#swagger-parts)
-1. Simple controller with request/ response
-1. Simple controller with pojo json annotations
-1. Controller nested object
-1. Custom object mapper (serializer/ deserializer)
-1. security
-1. headers
-1. JSR303 bean validation
-
 
 
 <a name="swagger-parts"/>Swagger Parts   
@@ -204,8 +212,99 @@ To override, use the @Api annotation at the controller class level.
 public class StudentController {
 ```
 
+# Response object
+
+Add the pojo in the ResponseEntity return.
+
+Example:
+```
+@RequestMapping(value = "/student/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Student> get(@PathVariable(name="id") int id) {
+```
+
+## Jackson
+
+When using Jackson, Jackson annotations will be honored.
+
+Example:
+
+public class Student {
+
+```
+    @JsonProperty("studentId")
+    private int id;
+
+    @JsonIgnore
+    private String firstName;
+```     
+
+# Operation
+
+The operation uses the method name by default. To customize, use "@ApiOperation"
+
+Example:
+```
+@ApiOperation(value = "Find student by id",  notes = "some note")
+```
+where:
+* value is the name of the operation
+* notes is the description
+* tags is to group into logical group instead of by controller     
+
+## Input Pojo
+
+We will use a POST example for this.
+
+The name will be using the variable for the POJO.
+
+```
+@RequestMapping(value = "/students", method = RequestMethod.POST)
+    public ResponseEntity<Student> create(@RequestBody CreateStudentRequest createStudentRequest) {
+
+        Student student = createStudent(1);
+        student.setFirstName(createStudentRequest.getFirstName());
+        student.setLastName(createStudentRequest.getLastName());
+        return ResponseEntity.status(201).body(student);
+    }
+```
+
+# Custom API Response
+
+You can add custom response at the method/ operation level.
+
+Example:
+```
+@ApiResponses(value = {
+            @ApiResponse(code = 422, message = "processing error", response = ApiError.class)})
+```
+
+# Customize Model
+
+Add the annotation "ApiModelProperty" to the property
+Example:
+```
+@ApiModelProperty(value = "first name", example = "John")
+    @NotEmpty
+    private String firstName;
+```
+where:
+* value - descriptive name instead of the field name
+* example - some value for user to infer
+
 References
 ==========
 
 * https://springfox.github.io/springfox/docs/snapshot/
 * https://www.baeldung.com/swagger-2-documentation-for-spring-rest-api
+* https://dzone.com/articles/spring-boot-2-restful-api-documentation-with-swagg
+* https://www.vojtechruzicka.com/documenting-spring-boot-rest-api-swagger-springfox/
+
+
+
+TODO
+=========
+
+1. Custom object mapper (serializer/ deserializer)
+1. security
+1. headers - ApiImplicitParam
+    
