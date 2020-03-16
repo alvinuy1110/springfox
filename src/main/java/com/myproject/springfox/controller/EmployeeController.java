@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +29,17 @@ public class EmployeeController {
         return ResponseEntity.ok().body(employee);
     }
 
+    @ApiOperation(value = "Find employee",  notes = "this is the description")
+    @RequestMapping(value = "/employees/param", method = RequestMethod.GET)
+    public ResponseEntity<Employee> getEmployeeByParam(
+            @RequestHeader("User-Agent") String userAgent,
+            @RequestParam(name = "param1", required = true, defaultValue = "abc") String param1
+    ,@RequestParam(name = "param2", required = false) String param2
+    ) throws Exception {
+
+        Employee employee = createEmployee(1);
+        return ResponseEntity.ok().body(employee);
+    }
 
     private Employee createEmployee(int id) throws ParseException {
         Employee employee = new Employee();

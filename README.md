@@ -315,6 +315,71 @@ where:
 * value - descriptive name instead of the field name
 * example - some value for user to infer
 
+# Security
+
+## Define the API Key
+
+Create the way the api key.  This could be ApiKey, Basic Auth, OAuth.
+
+Example: Custom header token
+```
+    private ApiKey apiKey() {
+        return new ApiKey("auth_token", "auth-token", "header");
+    }
+```
+
+## Define the Security Context
+
+Here we define the link to the API Key and which paths to apply the security to.
+Important to review the "forPaths(...)" to define the paths.
+
+Example:
+```
+  private SecurityContext securityContext() {
+        // apply security to what paths
+        return SecurityContext.builder().securityReferences(this.defaultAuth()).forPaths(PathSelectors.any()).forPaths(PathSelectors.regex("/api/.*")).build();
+    }
+
+    List<SecurityReference> defaultAuth() {
+        AuthorizationScope authorizationScope
+                = new AuthorizationScope("global", "accessEverything");
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = authorizationScope;
+        return newArrayList(
+                // the key must match the name of the ApiKey
+                new SecurityReference("auth_token", authorizationScopes));
+    }
+```
+
+## Configure Into SpringFox
+
+Register the settings for SpringFox.
+
+Example:
+```
+return new Docket(DocumentationType.SWAGGER_2)
+                .....
+                // adding security
+                .securitySchemes(newArrayList(apiKey()))
+                .securityContexts(newArrayList(securityContext()))
+
+```
+
+# Support for Params in Operations
+
+## Using Request Param / Request Header
+
+Example:
+```
+ @ApiOperation(value = "Find employee",  notes = "this is the description")
+    @RequestMapping(value = "/employees/param", method = RequestMethod.GET)
+    public ResponseEntity<Employee> getEmployeeByParam(
+            @RequestHeader("User-Agent") String userAgent,
+            @RequestParam(name = "param1", required = true, defaultValue = "abc") String param1
+    ,@RequestParam(name = "param2", required = false) String param2
+    ) throws Exception {
+```
+
 References
 ==========
 
@@ -323,11 +388,3 @@ References
 * https://dzone.com/articles/spring-boot-2-restful-api-documentation-with-swagg
 * https://www.vojtechruzicka.com/documenting-spring-boot-rest-api-swagger-springfox/
 
-
-
-TODO
-=========
-
-1. security
-1. headers - ApiImplicitParam
-    
